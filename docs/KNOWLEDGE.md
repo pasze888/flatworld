@@ -56,6 +56,16 @@
 - 坑 1：用 `getSharedSpawnPos()`+固定偏移落地会悬空，生存模式摔死。
 - 坑 2：直接 `LevelReader#getHeight(MOTION_BLOCKING, x, z)` 对**未加载区块**返回错误值（min_y/0），
   玩家会被放进虚空——必须先 `getChunkAt` 等强制加载区块，或直接用 `adjustSpawnLocation`。
+- **双向传送判断当前维度**：`player.level().dimension()` → `ResourceKey<Level>`，与
+  `Level.OVERWORLD`/`FLAT_WORLD`（`ResourceKey.create(Registries.DIMENSION, ...)`）`==` 比较。
+  主世界 ServerLevel 取法：`player.server.overworld()`。
+- **玩家重生点**：`ServerPlayer#getRespawnPosition()` → `@Nullable BlockPos`（睡眠设置的床）；
+  `getRespawnDimension()` → `ResourceKey<Level>`（无重生点时默认 `Level.OVERWORLD`）；
+  `getRespawnAngle()` → `float`。判断"有主世界重生点"用
+  `respawn != null && getRespawnDimension() == Level.OVERWORLD`。
+- 自定义水平坐标的安全落点（非世界出生点）：`level.getChunkAt(horizontal).getHeight(
+  Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) + 1` —— `Level#getChunkAt(BlockPos)` 返回
+  `LevelChunk`，其 `getHeight(...)` 已强制加载区块。
 
 ## 踩坑：构建环境
 
