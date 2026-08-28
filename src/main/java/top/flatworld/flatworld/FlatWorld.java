@@ -19,7 +19,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
@@ -37,7 +39,8 @@ public class FlatWorld {
     public static final ResourceKey<Level> FLAT_WORLD = ResourceKey.create(
             Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "flat_world"));
 
-    public FlatWorld(IEventBus modEventBus) {
+    public FlatWorld(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         NeoForge.EVENT_BUS.register(this);
     }
 
@@ -49,7 +52,7 @@ public class FlatWorld {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         dispatcher.register(
                 Commands.literal("flatworld")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(source -> source.hasPermission(Config.COMMAND_PERMISSION_LEVEL.get()))
                         .executes(ctx -> {
                             ServerPlayer player = ctx.getSource().getPlayerOrException();
                             if (player.level().dimension() == FLAT_WORLD) {

@@ -105,6 +105,14 @@
 - 反馈：`CommandSourceStack#sendSuccess(Supplier<Component>, boolean)` / `sendFailure(Component)`；
   组件 `Component.translatable("command.flatworld.xxx")` 走语言文件。
 
+## 配置（ModConfigSpec，已验证签名）
+
+- 注册：主类构造函数参数里加 `ModContainer modContainer`（FML 自动注入），调用
+  `modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC)`。
+- 定义：`ModConfigSpec.Builder#comment(...).defineInRange(String path, int default, int min, int max)`
+  → `ModConfigSpec.IntValue`；`IntValue#get()` 返回当前值（继承 `ConfigValue<Integer>`）。
+- 配置项在 `registerCommands` 的 `requires` 谓词里读 `Config.X.get()`（运行时求值，改 config 生效）。
+
 ## 踩坑：构建环境
 
 - **Java 版本**：系统默认 `JAVA_HOME` 指向 zulu17-jdk（Java 17），但 NeoForge 1.21.1 + Gradle 9.2 需 **Java 21**。

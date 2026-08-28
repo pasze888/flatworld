@@ -6,7 +6,7 @@
 
 - 新增超平坦维度 `flatworld:flat_world`（基岩 + 石头 + 泥土 + 草方块的平坦大地，地表在 y≈0）。
 - 进入/离开方式（两种）：
-  - **命令**：`/flatworld`（需要 OP 权限，level 2），按当前维度双向传送；
+  - **命令**：`/flatworld`（权限等级由配置 `commandPermissionLevel` 决定，默认 0 即所有玩家可用）；
   - **末影珍珠**：向**堆肥桶**投掷末影珍珠，珍珠击中堆肥桶后投掷者被传送。
   - 传送方向：在**其它维度**（如主世界）→ 进超平坦维度（世界出生点）；已在**超平坦维度** → 回主世界（优先重生点/床，否则世界出生点）。
 - 该维度特性：
@@ -16,7 +16,7 @@
 
 ## 进入 / 离开维度
 
-- 命令：`/flatworld`（OP 权限）。
+- 命令：`/flatworld`（默认所有玩家可用，权限等级可在配置 `commandPermissionLevel` 中调整，0=所有玩家，1-4=OP 等级）。
 - 或：将末影珍珠扔向堆肥桶（击中堆肥桶方块），自动按当前维度双向传送。
 
 ## 技术要点
@@ -32,6 +32,14 @@
 - 永晴由群系 `has_precipitation: false` 实现（同沙漠），无需代码；不刷怪由群系 `spawners` 置空实现。
 - 地表垫高（60 层石头）使玩家眼睛高于「海平面 + 32」，避免非 flat 世界雾变暗导致的「维度边缘发黑」。
 - 命令监听 `RegisterCommandsEvent` 注册 `/flatworld`（`Commands.literal` + `getPlayerOrException`）。
+
+## 配置
+
+配置文件位于 `config/flatworld-common.toml`（首次启动后生成）：
+
+| 配置项 | 默认值 | 说明 |
+|---|---|---|
+| `commandPermissionLevel` | `0` | 执行 `/flatworld` 所需的最小权限等级（0=所有玩家，1~4=OP 等级） |
 
 ## 构建
 
