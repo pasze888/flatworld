@@ -77,11 +77,14 @@
   只影响**自然刷怪**；刷怪笼（SPAWNER）、结构（STRUCTURE）不受影响。
 - 自定义群系注册路径：`data/<ns>/worldgen/biome/<name>.json`（注册表 `Registries.BIOME`）；
   维度 JSON 里 `generator.settings.biome` 引用 `"<ns>:<name>"`。
-- **永晴（代码）**：天气循环在 `ServerLevel#advanceWeatherCycle`（每个 `hasSkyLight()` 维度都跑，
-  受 gamerule `doWeatherCycle` 制约），无维度级"永不降雨"字段。做法：监听
-  `LevelTickEvent.Post`（`event.getLevel() instanceof ServerLevel`，`serverLevel.dimension() == FLAT_WORLD`），
-  若 `isRaining() || isThundering()` 则 `setWeatherParameters(72000, 0, false, false)` 重置为晴朗。
-  `ServerLevel#setWeatherParameters(int clearTime, int weatherTime, boolean raining, boolean thundering)`。
+- **永晴（数据方案，仿沙漠）**：biome JSON 的 `has_precipitation: false` 使
+  `Biome#getPrecipitationAt` 永远返回 `Precipitation.NONE`，进而在 `Level#isRainingAt(pos)` 判
+  `!= Precipitation.RAIN` → 该群系位置永不落雨、不打雷（同沙漠）。纯数据、无代码开销。
+  边界：全局天气循环仍会推进，`isRaining()` 仍可能为 true（天空云层可能短暂变灰），但地面不落雨。
+  若要连天空也永晴（彻底清全局天气），才需代码监听（`LevelTickEvent` + `setWeatherParameters`）。
+  `ClimateSettings.CODEC` 字段：`has_precipitation`(bool, 必填)、`temperature`(float)、
+  `temperature_modifier`(可选)、`downfall`(float)。沙漠参考值为 `has_precipitation:false,
+  temperature:2.0, downfall:0.0`。
 
 ## 踩坑：构建环境
 

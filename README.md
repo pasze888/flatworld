@@ -10,7 +10,7 @@
   - 已在**超平坦维度** → 返回主世界（优先落在玩家重生点/床，没有则落在主世界出生点）。
 - 该维度特性：
   - **永昼**：维度类型 `fixed_time: 6000`（时间固定正午）；
-  - **永晴**：监听 `LevelTickEvent`，该维度一旦下雨/打雷立即重置为晴朗；
+  - **永晴**：维度群系 `has_precipitation: false`（仿照沙漠），即使天气循环触发下雨该维度也不落雨、不打雷；
   - **不刷怪**：维度群系为自定义 `flatworld:flat_plains`（平原外观但 spawners 全空），自然刷怪循环不生成任何生物（刷怪笼、结构刷怪不受影响）。
 
 ## 进入 / 离开维度
@@ -29,7 +29,7 @@
   `ServerPlayer#teleportTo(ServerLevel, double, double, double, float, float)` 跨维度传送。
 - 落点高度复用原版 `Entity#adjustSpawnLocation` / `getChunkAt().getHeight(MOTION_BLOCKING_NO_LEAVES)`
   先强制加载区块再取地表，避免落地虚空或悬空摔死。
-- 永晴监听 `LevelTickEvent.Post`，在超平坦维度若 `isRaining()/isThundering()` 则 `setWeatherParameters` 清天气。
+- 永晴由群系 `has_precipitation: false` 实现（同沙漠），无需代码；不刷怪由群系 `spawners` 置空实现。
 
 ## 构建
 
