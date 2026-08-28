@@ -18,6 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.slf4j.Logger;
 
 @Mod(FlatWorld.MODID)
@@ -105,6 +106,23 @@ public class FlatWorld {
         // 强制加载目标区块后按地表高度取安全落点。
         BlockPos target = safeSurfacePos(overworld, horizontal);
         player.teleportTo(overworld, target.getX() + 0.5, target.getY(), target.getZ() + 0.5, player.getYRot(), player.getXRot());
+    }
+
+    /**
+     * 超平坦维度保持永晴：每个维度 tick 末尾检查，若该维度在下雨/打雷则重置为晴朗。
+     */
+    @SubscribeEvent
+    public void onLevelTick(LevelTickEvent.Post event) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        if (serverLevel.dimension() != FLAT_WORLD) {
+            return;
+        }
+        if (serverLevel.isRaining() || serverLevel.isThundering()) {
+            // 设一段晴朗时间，覆盖天气循环刚刚推进出的雨/雷。
+            serverLevel.setWeatherParameters(72000, 0, false, false);
+        }
     }
 
     /**

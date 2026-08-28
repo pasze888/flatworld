@@ -67,6 +67,22 @@
   Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) + 1` —— `Level#getChunkAt(BlockPos)` 返回
   `LevelChunk`，其 `getHeight(...)` 已强制加载区块。
 
+## 永昼 / 永晴 / 不刷怪
+
+- **永昼**：`DimensionType` 的 `fixed_time` 字段（`OptionalLong`，JSON `"fixed_time": 6000`=正午）。
+  设了后 `DimensionType#timeOfDay` 永远返回固定值，时间不流动。
+- **不刷怪（群系方案，纯数据）**：自然刷怪由群系的 `MobSpawnSettings`（`spawners` map）决定。
+  把 biome JSON 的 `spawners` 各分类置空数组 `[]`（参考原版 `deep_dark.json`），自然刷怪循环就不生成生物。
+  注意 `spawners` 与 `spawn_costs` 是 `MobSpawnSettings.CODEC` 的**必需** `fieldOf`，须显式给 `{}` 空对象。
+  只影响**自然刷怪**；刷怪笼（SPAWNER）、结构（STRUCTURE）不受影响。
+- 自定义群系注册路径：`data/<ns>/worldgen/biome/<name>.json`（注册表 `Registries.BIOME`）；
+  维度 JSON 里 `generator.settings.biome` 引用 `"<ns>:<name>"`。
+- **永晴（代码）**：天气循环在 `ServerLevel#advanceWeatherCycle`（每个 `hasSkyLight()` 维度都跑，
+  受 gamerule `doWeatherCycle` 制约），无维度级"永不降雨"字段。做法：监听
+  `LevelTickEvent.Post`（`event.getLevel() instanceof ServerLevel`，`serverLevel.dimension() == FLAT_WORLD`），
+  若 `isRaining() || isThundering()` 则 `setWeatherParameters(72000, 0, false, false)` 重置为晴朗。
+  `ServerLevel#setWeatherParameters(int clearTime, int weatherTime, boolean raining, boolean thundering)`。
+
 ## 踩坑：构建环境
 
 - **Java 版本**：系统默认 `JAVA_HOME` 指向 zulu17-jdk（Java 17），但 NeoForge 1.21.1 + Gradle 9.2 需 **Java 21**。
