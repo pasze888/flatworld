@@ -23,6 +23,12 @@
 `monster_spawn_block_light_limit`。
 约束（构造器抛异常）：`height` % 16 == 0，`min_y` % 16 == 0，`min_y + height <= MAX_Y+1`，`logical_height <= height`。
 
+> ⚠️ **超平坦维度必须复用主世界的维度类型参数**：原版超平坦世界（`WorldPresets.FLAT`）用的是
+> `BuiltinDimensionTypes.OVERWORLD`（`min_y: -64, height: 384, logical_height: 384`），只把
+> chunk generator 换成 `FlatLevelSource`（见 `WorldPresets.Bootstrap#bootstrap` 与 `makeOverworld`）。
+> 若自造维度类型用了 `min_y: 0, height: 256`，天空光传播异常，表现为**远处/维度边缘发黑**（原版超平坦是明亮的）。
+> 修复：`min_y: -64, height: 384, logical_height: 384`（`fixed_time` 等其它字段可自定义，永昼保留 `fixed_time: 6000`）。
+
 `LevelStem.CODEC`：`{"type": <dimension_type 引用>, "generator": {...}}`。
 
 `FlatLevelSource.CODEC`（`Registries.CHUNK_GENERATOR` 注册名 `minecraft:flat`，见 `ChunkGenerators.bootstrap`）：
