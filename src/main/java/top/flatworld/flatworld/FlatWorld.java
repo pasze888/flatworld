@@ -69,9 +69,13 @@ public class FlatWorld {
     /**
      * 末影珍珠撞击到堆肥桶时，按投掷者当前所在维度双向传送：
      * 在其它维度 → 进超平坦维度；已在超平坦维度 → 返回主世界。
+     * 受配置 enableComposterTeleport 控制，关闭时不触发。
      */
     @SubscribeEvent
     public void onProjectileImpact(ProjectileImpactEvent event) {
+        if (!Config.ENABLE_COMPOSTER_TELEPORT.get()) {
+            return;
+        }
         if (!(event.getProjectile() instanceof ThrownEnderpearl pearl)) {
             return;
         }

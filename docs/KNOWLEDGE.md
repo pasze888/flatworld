@@ -111,7 +111,9 @@
   `modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC)`。
 - 定义：`ModConfigSpec.Builder#comment(...).defineInRange(String path, int default, int min, int max)`
   → `ModConfigSpec.IntValue`；`IntValue#get()` 返回当前值（继承 `ConfigValue<Integer>`）。
-- 配置项在 `registerCommands` 的 `requires` 谓词里读 `Config.X.get()`（运行时求值，改 config 生效）。
+  布尔项：`Builder#define(String path, boolean default)` → `ModConfigSpec.BooleanValue`，`get()` 返回 boolean。
+- 配置项在 `registerCommands` 的 `requires` 谓词里读 `Config.X.get()`（运行时求值，改 config 生效）；
+  事件监听里同样直接 `Config.X.get()` 判断开关。
 
 ## 踩坑：构建环境
 

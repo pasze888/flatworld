@@ -40,6 +40,7 @@
 | 配置项 | 默认值 | 说明 |
 |---|---|---|
 | `commandPermissionLevel` | `0` | 执行 `/flatworld` 所需的最小权限等级（0=所有玩家，1~4=OP 等级） |
+| `enableComposterTeleport` | `true` | 是否允许「末影珍珠扔进堆肥桶」触发传送（false 则关闭该方式，仍可用命令） |
 
 ## 构建
 
