@@ -49,10 +49,13 @@
   判堆肥桶：`level.getBlockState(pos).is(Blocks.COMPOSTER)`。
 - 出生点：`ServerLevel#getSharedSpawnPos()` → `BlockPos`（⚠️ 其 Y 不可靠，勿直接用于跨维度落地）。
 - 取消原撞击：`event.setCanceled(true)` + `pearl.discard()`。
-- 跨维度落地高度：`LevelReader#getHeight(Heightmap.Types.MOTION_BLOCKING, x, z)` 返回该列
-  最高的「阻挡移动」方块之上那一格的 y（即玩家安全站立的 y）。用
-  `Heightmap.Types.MOTION_BLOCKING` 落地即可踩在地表，避免空中摔死。
-  （坑：用 `getSharedSpawnPos()`+固定偏移落地会悬空，生存模式摔死。）
+- **跨维度安全落点（最终方案）**：`Entity#adjustSpawnLocation(ServerLevel level, BlockPos pos)` —— 原版重生/传送用，
+  内部用 `level.getChunkAt(spawnPos)` **强制加载出生点区块**后取
+  `Heightmap.Types.MOTION_BLOCKING_NO_LEAVES` 高度 +1，返回安全落点 BlockPos。
+  传送到其它维度请用 `player.adjustSpawnLocation(target, target.getSharedSpawnPos())`，勿手算。
+- 坑 1：用 `getSharedSpawnPos()`+固定偏移落地会悬空，生存模式摔死。
+- 坑 2：直接 `LevelReader#getHeight(MOTION_BLOCKING, x, z)` 对**未加载区块**返回错误值（min_y/0），
+  玩家会被放进虚空——必须先 `getChunkAt` 等强制加载区块，或直接用 `adjustSpawnLocation`。
 
 ## 踩坑：构建环境
 
