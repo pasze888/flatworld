@@ -1,8 +1,12 @@
 package top.flatworld.flatworld;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +21,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import org.slf4j.Logger;
 
@@ -34,6 +39,28 @@ public class FlatWorld {
 
     public FlatWorld(IEventBus modEventBus) {
         NeoForge.EVENT_BUS.register(this);
+    }
+
+    /**
+     * 注册 /flatworld 命令：按执行者当前所在维度双向传送（在超平坦维度 → 回主世界；否则 → 进超平坦维度）。
+     */
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        dispatcher.register(
+                Commands.literal("flatworld")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                            if (player.level().dimension() == FLAT_WORLD) {
+                                teleportToOverworld(player);
+                                ctx.getSource().sendSuccess(() -> Component.translatable("command.flatworld.to_overworld"), true);
+                            } else {
+                                teleportToFlatWorld(player);
+                                ctx.getSource().sendSuccess(() -> Component.translatable("command.flatworld.to_flat_world"), true);
+                            }
+                            return 1;
+                        }));
     }
 
     /**

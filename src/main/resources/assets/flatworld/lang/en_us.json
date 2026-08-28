@@ -1,2 +1,4 @@
 {
+  "command.flatworld.to_flat_world": "Teleported to the flat world dimension",
+  "command.flatworld.to_overworld": "Teleported back to the overworld"
 }

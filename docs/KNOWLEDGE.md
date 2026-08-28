@@ -23,11 +23,15 @@
 `monster_spawn_block_light_limit`。
 约束（构造器抛异常）：`height` % 16 == 0，`min_y` % 16 == 0，`min_y + height <= MAX_Y+1`，`logical_height <= height`。
 
-> ⚠️ **超平坦维度必须复用主世界的维度类型参数**：原版超平坦世界（`WorldPresets.FLAT`）用的是
-> `BuiltinDimensionTypes.OVERWORLD`（`min_y: -64, height: 384, logical_height: 384`），只把
-> chunk generator 换成 `FlatLevelSource`（见 `WorldPresets.Bootstrap#bootstrap` 与 `makeOverworld`）。
-> 若自造维度类型用了 `min_y: 0, height: 256`，天空光传播异常，表现为**远处/维度边缘发黑**（原版超平坦是明亮的）。
-> 修复：`min_y: -64, height: 384, logical_height: 384`（`fixed_time` 等其它字段可自定义，永昼保留 `fixed_time: 6000`）。
+> ⚠️ **自定义超平坦维度「边缘发黑」的根因是雾（fog），不是天空光**：
+> `FogRenderer#setupFog` 里 `f5 = (camera.y - min_y) * getClearColorScale()`，非 flat 世界
+> `getClearColorScale()` 返回 `0.03125`（即 /32），`f5 < 1` 时雾颜色会 ×f5² 变暗 → 远处发黑。
+> 因此需要 `camera.y >= min_y + 32` 雾才正常。`isFlat`/`getClearColorScale` 是世界级标志
+> （`PrimaryLevelData#isFlatWorld` → 世界创建预设），自定义额外维度拿不到 flat 待遇。
+> **修复（纯数据）**：像 `creative_dimension` 那样用 `layers` 垫高地表，使它比 `min_y` 高至少 32 格。
+> 参考 `creative_dimension`：`min_y:-64` + `layers` 1 层 bedrock + 63 层 white_concrete（地表 y≈0）。
+> 本模组采用 `min_y:-64` + 1 bedrock + 60 stone + 2 dirt + 1 grass（共 64 层，地表 y≈-1）。
+> （若要保留 4 层薄超平坦又不发黑，只能靠客户端 Mixin 改 `getClearColorScale`/`getHorizonHeight`。）
 
 `LevelStem.CODEC`：`{"type": <dimension_type 引用>, "generator": {...}}`。
 
@@ -91,6 +95,15 @@
   `ClimateSettings.CODEC` 字段：`has_precipitation`(bool, 必填)、`temperature`(float)、
   `temperature_modifier`(可选)、`downfall`(float)。沙漠参考值为 `has_precipitation:false,
   temperature:2.0, downfall:0.0`。
+
+## 命令注册（已验证签名）
+
+- 事件：`net.neoforged.neoforge.event.RegisterCommandsEvent`（挂 `NeoForge.EVENT_BUS`）；
+  `getDispatcher()` → `CommandDispatcher<CommandSourceStack>`，`getBuildContext()` → `CommandBuildContext`。
+- 注册：`dispatcher.register(Commands.literal("flatworld").requires(s -> s.hasPermission(2))
+  .executes(ctx -> {...}))`；`CommandSourceStack#getPlayerOrException()` 抛 `CommandSyntaxException`。
+- 反馈：`CommandSourceStack#sendSuccess(Supplier<Component>, boolean)` / `sendFailure(Component)`；
+  组件 `Component.translatable("command.flatworld.xxx")` 走语言文件。
 
 ## 踩坑：构建环境
 
