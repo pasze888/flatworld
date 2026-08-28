@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -68,8 +69,10 @@ public class FlatWorld {
         event.setCanceled(true);
         pearl.discard();
 
-        // 传送到目标维度：默认落地在世界出生点附近
-        BlockPos spawn = target.getSharedSpawnPos();
-        player.teleportTo(target, spawn.getX() + 0.5, spawn.getY() + 1, spawn.getZ() + 0.5, player.getYRot(), player.getXRot());
+        // 传送到目标维度：水平坐标沿用玩家当前位置，Y 取目标维度该列地表高度，避免落地空中摔死。
+        int x = BlockPos.containing(player.position()).getX();
+        int z = BlockPos.containing(player.position()).getZ();
+        int surfaceY = target.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        player.teleportTo(target, x + 0.5, surfaceY, z + 0.5, player.getYRot(), player.getXRot());
     }
 }
