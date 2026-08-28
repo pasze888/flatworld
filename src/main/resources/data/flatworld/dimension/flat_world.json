@@ -12,6 +12,10 @@
           "block": "minecraft:bedrock"
         },
         {
+          "height": 60,
+          "block": "minecraft:stone"
+        },
+        {
           "height": 2,
           "block": "minecraft:dirt"
         },
