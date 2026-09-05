@@ -1,4 +1,4 @@
-package top.flatworld.flatworld;
+package io.github.pasze888.flatworld;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
