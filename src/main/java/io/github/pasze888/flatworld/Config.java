@@ -15,12 +15,5 @@ public class Config {
             .comment("Minimum permission level required to use the /flatworld command (0 = all players, 1-4 = operator levels).")
             .defineInRange("commandPermissionLevel", 0, 0, 4);
 
-    /**
-     * 是否允许「末影珍珠扔进堆肥桶」触发传送（true=启用，false=禁用）。
-     */
-    public static final ModConfigSpec.BooleanValue ENABLE_COMPOSTER_TELEPORT = BUILDER
-            .comment("Whether throwing an ender pearl into a composter triggers teleporting between dimensions.")
-            .define("enableComposterTeleport", true);
-
     public static final ModConfigSpec SPEC = BUILDER.build();
 }

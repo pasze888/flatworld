@@ -9,12 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -22,7 +18,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import org.slf4j.Logger;
 
 @Mod(FlatWorld.MODID)
@@ -55,45 +50,6 @@ public class FlatWorld {
                             }
                             return 1;
                         }));
-    }
-
-    /**
-     * 末影珍珠撞击到堆肥桶时，按投掷者当前所在维度双向传送：
-     * 在其它维度 → 进超平坦维度；已在超平坦维度 → 返回主世界。
-     * 受配置 enableComposterTeleport 控制，关闭时不触发。
-     */
-    @SubscribeEvent
-    public void onProjectileImpact(ProjectileImpactEvent event) {
-        if (!Config.ENABLE_COMPOSTER_TELEPORT.get()) {
-            return;
-        }
-        if (!(event.getProjectile() instanceof ThrownEnderpearl pearl)) {
-            return;
-        }
-        if (!(event.getRayTraceResult() instanceof BlockHitResult blockHit)) {
-            return;
-        }
-
-        // 只有撞击到堆肥桶才触发
-        BlockPos pos = blockHit.getBlockPos();
-        if (!pearl.level().getBlockState(pos).is(Blocks.COMPOSTER)) {
-            return;
-        }
-
-        Entity owner = pearl.getOwner();
-        if (!(owner instanceof ServerPlayer player)) {
-            return;
-        }
-
-        // 取消珍珠原本的撞击行为（不再生成实体/伤害等）
-        event.setCanceled(true);
-        pearl.discard();
-
-        if (player.level().dimension() == ModDimensions.FLAT_WORLD_LEVEL_KEY) {
-            teleportToOverworld(player);
-        } else {
-            teleportToFlatWorld(player);
-        }
     }
 
     /**

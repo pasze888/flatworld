@@ -46,7 +46,7 @@ authors="${mod_authors}"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Adds a new superflat dimension. Throw an ender pearl into a composter to travel there.
+Adds a new superflat dimension (eternal noon, no rain, no natural spawns). Use /flatworld to travel between the overworld and it.
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
