@@ -2,13 +2,11 @@ package io.github.pasze888.flatworld;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
+import io.github.pasze888.flatworld.worldgen.dim.ModDimensions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -32,13 +30,6 @@ public class FlatWorld {
     public static final String MODID = "flatworld";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    /**
-     * 超平坦维度的 ResourceKey。维度由 data/flatworld/dimension/flat_world.json 数据包注册，
-     * 对应 dimension_type 为 data/flatworld/dimension_type/flat_world.json。
-     */
-    public static final ResourceKey<Level> FLAT_WORLD = ResourceKey.create(
-            Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "flat_world"));
-
     public FlatWorld(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         NeoForge.EVENT_BUS.register(this);
@@ -55,7 +46,7 @@ public class FlatWorld {
                         .requires(source -> source.hasPermission(Config.COMMAND_PERMISSION_LEVEL.get()))
                         .executes(ctx -> {
                             ServerPlayer player = ctx.getSource().getPlayerOrException();
-                            if (player.level().dimension() == FLAT_WORLD) {
+                            if (player.level().dimension() == ModDimensions.FLAT_WORLD_LEVEL_KEY) {
                                 teleportToOverworld(player);
                                 ctx.getSource().sendSuccess(() -> Component.translatable("command.flatworld.to_overworld"), true);
                             } else {
@@ -98,7 +89,7 @@ public class FlatWorld {
         event.setCanceled(true);
         pearl.discard();
 
-        if (player.level().dimension() == FLAT_WORLD) {
+        if (player.level().dimension() == ModDimensions.FLAT_WORLD_LEVEL_KEY) {
             teleportToOverworld(player);
         } else {
             teleportToFlatWorld(player);
@@ -109,9 +100,9 @@ public class FlatWorld {
      * 传送到超平坦维度：落在该维度世界出生点的安全地表。
      */
     private void teleportToFlatWorld(ServerPlayer player) {
-        ServerLevel target = player.server.getLevel(FLAT_WORLD);
+        ServerLevel target = player.server.getLevel(ModDimensions.FLAT_WORLD_LEVEL_KEY);
         if (target == null) {
-            LOGGER.warn("Flat world dimension not found: {}", FLAT_WORLD.location());
+            LOGGER.warn("Flat world dimension not found: {}", ModDimensions.FLAT_WORLD_LEVEL_KEY.location());
             return;
         }
 
