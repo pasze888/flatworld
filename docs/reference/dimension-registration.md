@@ -1,10 +1,11 @@
-# KNOWLEDGE.md — FlatWorld (flatworld)
+# FlatWorld 维度注册与已验证 API 事实
 
-已验证的 API 签名与踩坑记录（NeoForge 1.21.1 / 21.1.244，MC 1.21.1，Parchment 2024.11.17）。
+> 本文原为 `docs/KNOWLEDGE.md`，按 §7 落点表迁入 `docs/reference/`；构建环境坑见 [docs/troubleshooting.md](../troubleshooting.md)。
+> 已验证的 API 签名与领域事实（NeoForge 1.21.1 / 21.1.244，MC 1.21.1，Parchment 2024.11.17）。
 
 ## 维度注册（教程式：注册类 + 数据生成）
 
-参考 [Tutorial-Mod-1.21.1-NeoForge](../Tutorial-Mod-1.21.1-NeoForge) 的
+参考 [Tutorial-Mod-1.21.1-NeoForge](../../../Tutorial-Mod-1.21.1-NeoForge) 的
 `worldgen/dim/ModDimensions` + `datagen/ModWorldGenProvider` 写法。
 
 - 一个维度要三个键，分别对应三个注册表：
@@ -162,10 +163,3 @@
 - 删除配置项后，旧的 `config/flatworld-common.toml` 里会残留已删除的键——NeoForge 会忽略并
   在下次写盘时清理；若启动报未知键，删掉 `run/config/flatworld-common*.toml*` 重新生成即可。
 
-## 踩坑：构建环境
-
-- **Java 版本**：系统默认 `JAVA_HOME` 指向 zulu17-jdk（Java 17），但 NeoForge 1.21.1 + Gradle 9.2 需 **Java 21**。
-  本机可用 `C:\Users\lzp\scoop\apps\dragonwell21-jdk\current`（21.0.10）。构建前需 `$env:JAVA_HOME` 指向 Java 21。
-- **Gradle wrapper 锁**：`~/.gradle/wrapper/dists/gradle-9.2.1-bin/.../gradle-9.2.1-bin.zip.lck`
-  在沙箱下会因 workspace 外写权限被拒，报 `FileNotFoundException (... 拒绝访问)`；需用更宽沙箱权限跑
-  `./gradlew runData` / `./gradlew build`（`runData` 会启动完整开发版游戏，首次较慢）。
