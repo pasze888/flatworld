@@ -63,6 +63,14 @@ The config file is `config/flatworld-common.toml`, created on first launch:
 ./gradlew runClient # launch the development client
 ```
 
-## License
+## License & attribution
 
 MIT — see [LICENSE](LICENSE).
+
+The approach of giving a dimension its own `ServerLevelData` is adapted from
+[Re-Avaritia](https://github.com/Nova-Committee/Re-Avaritia)'s
+`committee.nova.mods.avaritia.common.dimension.PersonalLevelData`
+(MIT License, Copyright (c) 2022 cnlimiter). `FlatWorldLevelData` in this mod is an independent
+implementation — see [the design notes](docs/design/time-weather-modes.md) for how it differs.
+No Re-Avaritia assets (CC BY-NC-SA 4.0) are used.
+

@@ -24,6 +24,15 @@ import net.minecraft.world.level.timers.TimerQueue;
  *       {@code TimerQueue}；而本维度自行推进时间、计划事件也随之由本维度 tick，委托会导致主世界的计划事件
  *       被 tick 两次。</li>
  * </ul>
+ *
+ * <p><b>来源说明：</b>「用一个自实现的 {@link ServerLevelData} 覆写时间与天气访问器，让非主世界维度脱离
+ * 主世界时钟」这一思路参考自 Re-Avaritia 的
+ * {@code committee.nova.mods.avaritia.common.dimension.PersonalLevelData}
+ * （<a href="https://github.com/Nova-Committee/Re-Avaritia">Nova-Committee/Re-Avaritia</a>，
+ * MIT License, Copyright (c) 2022 cnlimiter）。本类是独立实现，与之的差异：去掉了 FOLLOW 系列模式
+ * （门控标志由 4 个减为 1 个 {@link #timeCycling}）、不覆写 gameTime、把计划事件换成维度自己的
+ * {@link TimerQueue}。差异的完整论证见 {@code docs/design/time-weather-modes.md}，版权声明见 README。
+ * 未使用 Re-Avaritia 的任何素材（其素材为 CC BY-NC-SA 4.0）。
  */
 public class FlatWorldLevelData extends DerivedLevelData {
 

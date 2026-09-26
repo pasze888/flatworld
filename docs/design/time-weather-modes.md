@@ -33,12 +33,19 @@
 
 ## 关键决策
 
-### 为什么不用无尽贪婪（Re-Avaritia Infinity Ring）那套
+### 借用哪部分、不借用哪部分（Re-Avaritia Infinity Ring）
 
-它的 `PersonalLevelData` 是本设计的直接参考，但**其余部分（`DynamicDimensions`）不适用**：
-那套是「运行时动态注册 + 每玩家一个维度」，依赖 8+ 处 AT（含 `MappedRegistry.byId/toId`
-手工维护注册表内部数组）与两个 deprecated 内部 API（`forgeGetWorldMap` / `markWorldsDirty`），
-而本模组只需要给**一个静态维度**换 levelData。
+「用一个自实现的 `ServerLevelData` 覆写时间与天气访问器，让维度脱离主世界时钟」这一思路，
+来自 Re-Avaritia 的 `PersonalLevelData`
+（[Nova-Committee/Re-Avaritia](https://github.com/Nova-Committee/Re-Avaritia)，
+MIT License, Copyright (c) 2022 cnlimiter；版权声明见
+[README 的「许可与署名」](../../README.zh-CN.md)）。本模组的 `FlatWorldLevelData` 是独立实现：
+门控标志由 4 个减为 1 个、去掉 FOLLOW 系列模式、不覆写 gameTime、计划事件改用维度自己的
+`TimerQueue`。
+
+它**其余部分（`DynamicDimensions`）不适用**：那套是「运行时动态注册 + 每玩家一个维度」，
+依赖 8+ 处 AT（含 `MappedRegistry.byId/toId` 手工维护注册表内部数组）与两个 deprecated 内部 API
+（`forgeGetWorldMap` / `markWorldsDirty`），而本模组只需要给**一个静态维度**换 levelData。
 
 因此本设计**只借鉴 `PersonalLevelData` 这一个类的思路**，AT 收敛到 2 行。
 

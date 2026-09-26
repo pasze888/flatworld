@@ -61,6 +61,14 @@
 ./gradlew runClient # 启动开发版客户端
 ```
 
-## 许可
+## 许可与署名
 
 MIT 许可，见 [LICENSE](LICENSE)。
+
+「让维度拥有自己的 `ServerLevelData`」这一思路参考自
+[Re-Avaritia](https://github.com/Nova-Committee/Re-Avaritia) 的
+`committee.nova.mods.avaritia.common.dimension.PersonalLevelData`
+（MIT License, Copyright (c) 2022 cnlimiter）。本模组的 `FlatWorldLevelData` 是独立实现——
+与之的差异见[设计说明](docs/design/time-weather-modes.md)。未使用 Re-Avaritia 的任何素材
+（其素材为 CC BY-NC-SA 4.0）。
+
