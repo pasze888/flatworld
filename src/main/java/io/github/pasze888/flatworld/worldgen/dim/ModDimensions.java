@@ -46,13 +46,15 @@ public class ModDimensions {
 
     /**
      * 数据生成入口：注册维度类型。参数含义依次为
-     * fixedTime（固定时间，6000=正午，实现永昼）、hasSkyLight、hasCeiling、ultrawarm、natural、
+     * fixedTime（固定时间；此处留 {@code OptionalLong.empty()}，时间改由 {@code FlatWorldLevelData}
+     * 按配置控制——{@code DimensionType#timeOfDay(long)} 在 fixedTime 存在时会丢弃传入的 dayTime，
+     * 设了它任何时间模式都会失效）、hasSkyLight、hasCeiling、ultrawarm、natural、
      * coordinateScale（坐标缩放）、bedWorks、respawnAnchorWorks、minY、height、logicalHeight、
      * infiniburn（不灭火方块标签）、effectsLocation（环境效果）、ambientLight、monsterSettings。
      */
     public static void bootstrap(BootstrapContext<DimensionType> context) {
         context.register(FLAT_WORLD_TYPE_KEY, new DimensionType(
-                OptionalLong.of(6000L),
+                OptionalLong.empty(),
                 true,
                 false,
                 false,

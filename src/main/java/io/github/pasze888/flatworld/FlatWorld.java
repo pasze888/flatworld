@@ -2,6 +2,7 @@ package io.github.pasze888.flatworld;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
+import io.github.pasze888.flatworld.worldgen.dim.FlatWorldTuning;
 import io.github.pasze888.flatworld.worldgen.dim.ModDimensions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -28,6 +29,8 @@ public class FlatWorld {
     public FlatWorld(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         NeoForge.EVENT_BUS.register(this);
+        // flat_world 维度的时间/天气与主世界解耦，见 FlatWorldTuning。
+        NeoForge.EVENT_BUS.register(new FlatWorldTuning());
     }
 
     /**

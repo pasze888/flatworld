@@ -162,4 +162,58 @@
 - 配置项在 `registerCommands` 的 `requires` 谓词里读 `Config.X.get()`（运行时求值，改 config 生效）。
 - 删除配置项后，旧的 `config/flatworld-common.toml` 里会残留已删除的键——NeoForge 会忽略并
   在下次写盘时清理；若启动报未知键，删掉 `run/config/flatworld-common*.toml*` 重新生成即可。
+- 枚举项：`Builder#defineEnum(String path, V defaultValue)` → `ModConfigSpec.EnumValue<V>`，
+  `EnumValue#get()` 返回枚举常量。
+
+## 维度的时间与天气（如何脱离主世界）
+
+非主世界维度的 `ServerLevelData` 由 `MinecraftServer#createLevels` 构造成 `DerivedLevelData`
+（同处 `new ServerLevel(...)` 的 `tickTime` 实参为 `false`）。它的行为决定了三件事：
+
+- getter 全部委托主世界（`getDayTime()`、`isRaining()`、`getGameRules()` …）；
+- **setter 全部是空实现**：`setGameTime` / `setDayTime` / `setSpawn` / `setThundering` /
+  `setThunderTime` / `setRaining` / `setRainTime` / `setClearWeatherTime` / `setGameType` /
+  `setInitialized` / `setWorldBorder` … ⇒ `level.setDayTime(...)`、`level.setWeatherParameters(...)`
+  在非主世界维度上**写不进去**，在该维度执行 `/time set`、`/weather` 同样无效；
+- `getScheduledEvents()` 委托主世界的 `TimerQueue`。
+
+### 替换 levelData 需要的两个字段
+
+| 字段 | 21.1.244 原声明 | 位置 |
+|---|---|---|
+| `Level.levelData` | `protected final WritableLevelData` | `Level.java:111` |
+| `ServerLevel.serverLevelData` | `private final ServerLevelData` | `ServerLevel.java:181` |
+
+- 都写 `public-f`（提可见性 + 去 final）；`ServerLevel.tickTime` 是 `private final boolean`
+  且默认 `false`，本模组**不改它**（若设 true，`tickTime()` 会自行推进 gameTime 并 tick
+  `getScheduledEvents()`）。
+- **两者必须指向同一个对象**：`ServerLevel#tickTime()` 读 `this.levelData`，而
+  `advanceWeatherCycle()` 读 `this.levelData` 却写 `this.serverLevelData`，不同实例会让天气逻辑
+  读到自己从未写入的值。
+- 文件放 `src/main/resources/META-INF/accesstransformer.cfg` 即可被 ModDevGradle 自动发现
+  （`build.gradle` 里那行 `accessTransformers = ...` 是可选写法，默认注释掉）。
+
+### 联动事实（都已核对源码）
+
+- `DimensionType#timeOfDay(long)` = `Mth.frac(fixedTime.orElse(dayTime)/24000 - 0.25)`：
+  **`fixed_time` 存在时会丢弃传入的 dayTime**。任何自定义时间都会被它屏蔽，必须让 `fixed_time` 留空。
+- 时间同步客户端**不需要自己发包**：`MinecraftServer#tickChildren` 在 `tickCount % 20 == 0` 时
+  对每个维度调 `synchronizeTime(level)`，读的正是 `level.getDayTime()`；
+  另有 `MinecraftServer#forceTimeSynchronization()` 可主动全量同步。
+- 天气广播在 `ServerLevel#advanceWeatherCycle()` 末尾按 `rainLevel`/`thunderLevel` 变化
+  `broadcastAll(ClientboundGameEventPacket...)`，独立天气也无需额外包。
+- `advanceWeatherCycle()` 的守卫是 `dimensionType().hasSkyLight()`；天气翻转由全局
+  `GameRules.RULE_WEATHER_CYCLE`（走 `worldData`）决定。它每 tick 读天气、算完写回，
+  所以自定义 levelData 若**接受**这些写入，算出的随机天气会覆盖配置值——固定天气应让 setter 落空。
+- 降雨要可见，群系的 `has_precipitation` 必须为 `true`
+  （`Biome#getPrecipitationAt` 返回 `RAIN`），否则 `RAIN`/`THUNDER` 模式只有 `rainLevel` 变化而无视觉。
+- `TimerQueue` 有单参构造器 `new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS)`
+  （`TimerCallbacks.SERVER_CALLBACKS` 是 `static final TimerCallbacks<MinecraftServer>`）。
+  自建队列可避免把计划事件委托给主世界、导致主世界队列被 tick 两次。
+- `LevelEvent.Load`（`getLevel()` → `LevelAccessor`）在 `MinecraftServer#createLevels` 中
+  每个维度 `put` 进 worldMap **之后**、首个 tick 之前 post，此时替换 `levelData` 安全。
+- `LevelTickEvent.Post`（`getLevel()` → `Level`）在 `serverlevel.tick()` 之后触发
+  （`EventHooks.fireLevelTickPost`），适合做每 tick 幂等的强制覆盖。
+- 这两个事件都不是 `IModBusEvent`，本模组用显式 `NeoForge.EVENT_BUS.register(...)` 注册，
+  不依赖 `@EventBusSubscriber` 的总线路由。
 
